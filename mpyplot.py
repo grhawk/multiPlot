@@ -13,6 +13,9 @@ config = {                      # Default values:
     'prefixTitle': '',          # String used as prefix in the title of each graph 
     'legendLoc': 'upper right', # Default position for the legend
     'noYticks': 2,              # After almost no Y tics will be printed
+    'debug_flag': False,        # Control the verbosity (only for debugging purpose)
+    'xsize': 25,                # Width of the picture (inches)
+    'ysize': 12.5,              # Height of the picture (inches)
 }
 
 def main():
@@ -26,11 +29,15 @@ def main():
 
     config['ncols'] = args.ncols
     config['cols']  = _parseColumns(args.columns)
+    config['debug_flag'] = args.debug_flag
     
-    print('files:', files)
-
     f, axs = _subplotgenerator(len(files))
-    print('cols:', config['cols'])
+    f.set_size_inches(config['xsize'], config['ysize'])
+    if config['debug_flag']: 
+        print('cols:', config['cols'])
+        print('files:', files)
+
+
 
     k = 0
     for f in files:             # Main loop over the files
@@ -58,11 +65,12 @@ def main():
             ylabel = metadata[config['cols'][1]]
             pass
 
-        print('xlabel:',xlabel)
-        print('ylabel:',ylabel)
-        print('labels:',labels)
-        print('title:',title)
-        print(data)
+        if config['debug_flag']:
+            print('xlabel:',xlabel)
+            print('ylabel:',ylabel)
+            print('labels:',labels)
+            print('title:',title)
+            print(data)
 
         _makeGraph(axs[k], title, ylabel, xlabel, data, labels, len(axs))
         k += 1
@@ -133,7 +141,7 @@ def _logicFunctionTicks(x,L,n):
     import math
 
     x = float(x)/float(config['ncols'])
-    print('x:',x)
+    #print('x:',x)
     L = float(L-2)
     n = float(n)
 
@@ -279,7 +287,6 @@ def _parseRange(rangel, lims):
         else:
             rangel[i] = float(rangel[i])
 
-    print(rangel)
     return rangel
 
 def _parser():
@@ -289,7 +296,7 @@ def _parser():
 
     parser.add_argument('filenames',
                         action = 'store',
-                        metavar = '<REGEX>',
+                        metavar = '<FILENAME>',
                         nargs = '+',
                         help = 'regex identifing the files you want to graph')
 
@@ -326,6 +333,12 @@ def _parser():
                         dest = 'yrange',
                         nargs = 2,
                         help = 'set the y range (: for nothing)')
+
+    parser.add_argument('--debug',
+                        action = 'store_true',
+                        dest = 'debug_flag',
+                        default = config['debug_flag'],
+                        help = 'be more verbose')
 
 
     return parser.parse_args()
